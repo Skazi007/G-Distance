@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Security Enhancement: Content Security Policy to allow embedded logo -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; object-src 'none';">
+    <title>LM Rail G Distance Calculator</title>
+    <style>
+        :root {
+            --primary-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #e0e0e0;
+            --border-color: #0f3460;
+            --input-bg: #1a1a2e;
+            --button-bg: #e94560;
+            --button-hover-bg: #c63a50;
+            --success-color: #3ddc97;
+            --warning-color: #ffc947;
+            --error-color: #ff6b6b;
+            --accent-color: #5372f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .calculator-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center; /* Center the title */
+            margin-bottom: 25px;
+        }
+        
+        h1 {
+            margin: 0;
+            color: #f0f0f0;
+            font-size: 1.8em;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 18px;
+            align-items: center;
+        }
+        
+        .form-grid label {
+            font-weight: 600;
+            text-align: right;
+            padding-right: 10px;
+            color: #a0a0c0;
+        }
+
+        .form-grid input[type="number"],
+        .form-grid select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1em;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-grid input[type="number"]:focus,
+        .form-grid select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(83, 114, 240, 0.3);
+        }
+        
+        .form-grid input[disabled] {
+            background-color: #2a2a4a;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .case-selection {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--input-bg);
+            padding: 8px;
+            border-radius: 8px;
+        }
+        
+        .case-selection label {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s, color 0.2s;
+            text-align: center;
+            flex-grow: 1;
+            color: #c0c0e0;
+        }
+        
+        .case-selection input[type="radio"] {
+            display: none;
+        }
+        
+        .case-selection input[type="radio"]:checked + label {
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(83, 114, 240, 0.3);
+        }
+
+        .spec-display {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-around;
+            background-color: #1a1a2e;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: -5px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .spec-display span {
+            color: #a0a0c0;
+        }
+        .spec-display strong {
+            color: #e0e0e0;
+        }
+        
+
+        .button-group {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button[type="submit"] {
+            background-color: var(--button-bg);
+        }
+        button[type="submit"]:hover {
+            background-color: var(--button-hover-bg);
+        }
+        
+        button[type="reset"] {
+            background-color: #4a4a6a;
+        }
+        button[type="reset"]:hover {
+            background-color: #6a6a8a;
+        }
+        
+        button#copyBtn {
+            background-color: var(--accent-color);
+            margin-top: 15px;
+        }
+        button#copyBtn:hover {
+            background-color: #3b5fda;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        #results {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            border: 2px solid var(--border-color);
+            min-height: 50px;
+            line-height: 1.7;
+            transition: border-color 0.3s;
+        }
+
+        #results.success-border { border-color: var(--success-color); }
+        #results.warning-border { border-color: var(--warning-color); }
+        #results.error-border { border-color: var(--error-color); }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-item span {
+            color: #a0a0c0;
+        }
+
+        .result-success { color: var(--success-color); }
+        .result-warning { color: var(--warning-color); }
+        .result-error { color: var(--error-color); }
+        .result-info { color: #a0a0c0; text-align: center; }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.85em;
+            color: #a0a0c0;
+            opacity: 0.7;
+        }
+
+        /* Responsive Styles for Mobile */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+
+            .calculator-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .logo {
+                width: 160px;
+                max-height: 50px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .form-grid label {
+                text-align: left;
+                padding-right: 0;
+                margin-bottom: -10px; 
+            }
+            
+            .spec-display {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <div class="header">
+            <h1>G Distance Calculator</h1>
+        </div>
+        
+        <form id="calculatorForm" class="form-grid">
+            
+            <div class="case-selection">
+                <input type="radio" id="case1" name="caseType" value="1" checked>
+                <label for="case1">Symmetrical</label>
+                
+                <input type="radio" id="case2" name="caseType" value="2">
+                <label for="case2">G1 Given</label>
+                
+                <input type="radio" id="case3" name="caseType" value="3">
+                <label for="case3">Verify Both</label>
+            </div>
+
+            <label for="railSize">Rail Type/Size:</label>
+            <select id="railSize" required>
+                <option value="15">HSR/SHS/HRX 15</option>
+                <option value="20">HSR/SHS/HRX 20</option>
+                <option value="25">HSR/SHS/HRX 25</option>
+                <option value="30">HSR/SHS/HRX 30</option>
+                <option value="35">HSR/SHS/HRX 35</option>
+                <option value="45">HSR/SHS/HRX 45</option>
+                <option value="55">HSR/SHS/HRX 55</option>
+                <option value="65">HSR/SHS/HRX 65</option>
+            </select>
+            
+            <div id="spec-display" class="spec-display"></div>
+
+            <label for="length">Rail Length (L):</label>
+            <input type="number" id="length" step="any" placeholder="e.g., 320 mm" required>
+
+            <label for="g1">G1 Distance:</label>
+            <input type="number" id="g1" step="any" placeholder="For Case 2 & 3" disabled>
+
+            <label for="g2">G2 Distance:</label>
+            <input type="number" id="g2" step="any" placeholder="For Case 3" disabled>
+            
+            <div class="button-group">
+                <button type="reset">Clear</button>
+                <button type="submit">Calculate</button>
+            </div>
+        </form>
+
+        <div id="results">
+            <p class="result-info">Results will be displayed here.</p>
+        </div>
+
+        <div class="footer">
+            <p>Developed by Nouman Kazi & Shakir Kazi, Quality Department</p>
+        </div>
+    </div>
+
+    <script>
+        const railSpecs = {
+            15: { P: 60, d: 7.5 }, 20: { P: 60, d: 9.5 }, 25: { P: 60, d: 11 },
+            30: { P: 80, d: 14 }, 35: { P: 80, d: 14 }, 45: { P: 105, d: 20 },
+            55: { P: 120, d: 23 }, 65: { P: 150, d: 26 },
+        };
+
+        const form = document.getElementById('calculatorForm');
+        const caseRadios = document.querySelectorAll('input[name="caseType"]');
+        const railSizeSelect = document.getElementById('railSize');
+        const specDisplay = document.getElementById('spec-display');
+        const g1Input = document.getElementById('g1');
+        const g2Input = document.getElementById('g2');
+        const resultsDiv = document.getElementById('results');
+
+        function updateInputStates() {
+            const selectedCase = document.querySelector('input[name="caseType"]:checked').value;
+            g1Input.disabled = true; g2Input.disabled = true;
+            g1Input.required = false; g2Input.required = false;
+            if (selectedCase !== '1') g1Input.value = ''; g2Input.value = '';
+            if (selectedCase === '2') {
+                g1Input.disabled = false; g1Input.required = true;
+            } else if (selectedCase === '3') {
+                g1Input.disabled = false; g1Input.required = true;
+                g2Input.disabled = false; g2Input.required = true;
+            }
+        }
+        
+        function updateSpecDisplay() {
+            const railSize = railSizeSelect.value;
+            const specs = railSpecs[railSize];
+            specDisplay.innerHTML = `
+                <div><span>Pitch (P):</span> <strong>${specs.P} mm</strong></div>
+                <div><span>Hole (d):</span> <strong>${specs.d} mm</strong></div>
+                <div><span>Radius (r):</span> <strong>${(specs.d / 2).toFixed(2)} mm</strong></div>
+            `;
+        }
+
+        function clearResults() {
+            resultsDiv.innerHTML = '<p class="result-info">Results will be displayed here.</p>';
+            resultsDiv.className = '';
+        }
+        
+        caseRadios.forEach(radio => radio.addEventListener('change', updateInputStates));
+        railSizeSelect.addEventListener('change', updateSpecDisplay);
+        form.addEventListener('reset', () => {
+            clearResults();
+            updateInputStates();
+        });
+        
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            let resultStatus = 'success';
+            let outputTextForCopy = "";
+            
+            // Security Enhancement: Use textContent instead of innerHTML to prevent XSS
+            const displayResult = (label, value, type) => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.textContent = label; // Safe
+
+                const valueStrong = document.createElement('strong');
+                valueStrong.className = `result-${type}`;
+                valueStrong.textContent = value; // Safe: Treats value as plain text
+
+                item.appendChild(labelSpan);
+                item.appendChild(valueStrong);
+                resultsDiv.appendChild(item);
+
+                outputTextForCopy += `${label}: ${value}\n`;
+                if (type === 'error') resultStatus = 'error';
+                else if (type === 'warning' && resultStatus !== 'error') resultStatus = 'warning';
+            };
+            
+            clearResults();
+            resultsDiv.innerHTML = '';
+
+            try {
+                const L = parseFloat(document.getElementById('length').value);
+                const railSize = parseInt(railSizeSelect.value);
+                const G1_in = parseFloat(g1Input.value) || 0;
+                const G2_in = parseFloat(g2Input.value) || 0;
+                const caseType = document.querySelector('input[name="caseType"]:checked').value;
+
+                if (isNaN(L) || L <= 0) throw new Error('Please enter a valid Rail Length.');
+
+                const { P, d } = railSpecs[railSize];
+                const r = d / 2;
+
+                // --- Calculation logic is unchanged ---
+                switch (caseType) {
+                    case '1':
+                        const n1 = Math.floor(L / P);
+                        let G_sym = (L - (n1 * P)) / 2;
+                        
+                        displayResult('Calculation Type', 'Symmetrical (Case 1)', 'info');
+                        displayResult('Calculated Pitches', n1, 'info');
+                        displayResult('Initial G1 = G2', `${G_sym.toFixed(2)} mm`, 'info');
+
+                        if (G_sym < r) {
+                            const G_new = ((2 * G_sym) + P) / 2;
+                            displayResult('Status', `🔴 CUT ON HOLE!`, 'error');
+                            displayResult('Suggested G1 = G2', `${G_new.toFixed(2)} mm`, 'error');
+                        } else if (G_sym <= (r + 2)) {
+                            const G_new = G_sym + (P / 2);
+                             displayResult('Status', `🟠 CUT VERY CLOSE!`, 'warning');
+                             displayResult('Suggested G1 = G2', `${G_new.toFixed(2)} mm`, 'warning');
+                        } else {
+                             displayResult('Status', `🟢 Acceptable`, 'success');
+                        }
+                        break;
+                    case '2':
+                        if (G1_in <= 0) throw new Error('Please enter a valid G1 value.');
+                        const n2 = Math.floor((L-G1_in) / P);
+                        const remainder2 = L - G1_in - (n2 * P);
+                        const G2_calc = remainder2;
+                        
+                        displayResult('Calculation Type', 'G1 Given (Case 2)', 'info');
+                        displayResult('Calculated Pitches', n2, 'info');
+                        displayResult('Calculated G2', `${G2_calc.toFixed(2)} mm`, 'info');
+                        
+                        let hasWarning2 = false;
+                        if (G1_in < r) { displayResult('G1 Status', `🔴 CUT ON HOLE!`, 'error'); hasWarning2 = true; }
+                        if (G2_calc < r) { displayResult('G2 Status', `🔴 CUT ON HOLE!`, 'error'); hasWarning2 = true; }
+                        if (!hasWarning2) { displayResult('Status', `🟢 Acceptable`, 'success'); }
+                        break;
+                    case '3':
+                         if (G1_in <= 0 || G2_in <= 0) throw new Error('Please enter valid G1 and G2 values.');
+                        const value3 = (L - (G1_in + G2_in)) / P;
+
+                        displayResult('Calculation Type', 'Verification (Case 3)', 'info');
+                        if (Math.abs(value3 - Math.round(value3)) < 0.001 && value3 >= 0) {
+                            displayResult('Status', `🟢 CORRECT`, 'success');
+                            displayResult('Pitch Count', `${Math.round(value3)} holes`, 'success');
+                        } else {
+                            displayResult('Status', `🔴 INCORRECT`, 'error');
+                            displayResult('Reason', `Span (L-G1-G2) is not a multiple of Pitch (P=${P})`, 'error');
+                        }
+                        break;
+                }
+            } catch (error) {
+                displayResult('Error', error.message, 'error');
+                 resultStatus = 'error';
+            }
+            resultsDiv.className = `${resultStatus}-border`;
+            
+            // Add Copy Button
+            if (resultsDiv.innerHTML) {
+                const copyButton = document.createElement('button');
+                copyButton.id = 'copyBtn';
+                copyButton.textContent = 'Copy Results';
+                copyButton.onclick = () => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = outputTextForCopy.trim();
+                    
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.position = "fixed";
+
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (successful) {
+                           copyButton.textContent = 'Copied!';
+                        } else {
+                           copyButton.textContent = 'Copy Failed!';
+                        }
+                    } catch (err) {
+                        copyButton.textContent = 'Copy Failed!';
+                    }
+                    
+                    setTimeout(() => copyButton.textContent = 'Copy Results', 1500);
+                    document.body.removeChild(textArea);
+                };
+                resultsDiv.appendChild(copyButton);
+            }
+        });
+
+        // Initialize UI on load
+        updateInputStates();
+        updateSpecDisplay();
+    </script>
+</body>
+</html>
+
+
+
